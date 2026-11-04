@@ -2,12 +2,13 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
+# Instalar bash e git caso necessário
+RUN apk add --no-cache git
+
 COPY package*.json ./
-RUN npm config set fetch-retries 5 \
-    && npm config set fetch-retry-mintimeout 20000 \
-    && npm config set fetch-retry-maxtimeout 120000 \
-    && npm config set fetch-timeout 300000 \
-    && npm ci --no-audit
+RUN npm config set registry https://registry.npmjs.org/ \
+    && npm config set maxsockets 3 \
+    && npm ci --no-audit --prefer-offline || npm install --legacy-peer-deps --no-audit
 
 COPY . .
 RUN npm run build:web
